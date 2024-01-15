@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -26,15 +27,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	uptimerobotcomv1alpha1 "github.com/luckielordie/uptime-robot-operator/api/v1alpha1"
+	"github.com/luckielordie/uptime-robot-operator/internal/uptimerobot"
 )
 
 // AccountReconciler reconciles a Account object
 type AccountReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	urClient uptimerobot.Client
+	Scheme   *runtime.Scheme
 }
 
 func getAccount(ctx context.Context, reader client.Reader, req ctrl.Request) (uptimerobotcomv1alpha1.Account, error) {
+	logger := log.FromContext(ctx)
 	account := uptimerobotcomv1alpha1.Account{}
 	err := reader.Get(ctx, req.NamespacedName, &account)
 	if err != nil {
@@ -43,8 +47,10 @@ func getAccount(ctx context.Context, reader client.Reader, req ctrl.Request) (up
 		}
 
 		logger.Info("requeue", "reason", "failed to get")
-		return ctrl.Result{}, client.IgnoreNotFound(err)
+		return uptimerobotcomv1alpha1.Account{}, err
 	}
+
+	return account, nil
 }
 
 //+kubebuilder:rbac:groups=uptimerobot.com.uptimerobot.com,resources=accounts,verbs=get;list;watch;create;update;patch;delete
@@ -52,19 +58,36 @@ func getAccount(ctx context.Context, reader client.Reader, req ctrl.Request) (up
 //+kubebuilder:rbac:groups=uptimerobot.com.uptimerobot.com,resources=accounts/finalizers,verbs=update
 
 func (reconciler *AccountReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx)
-
 	account, err := getAccount(ctx, reconciler, request)
 	if err != nil {
-		if !apierrors.IsNotFound(err) {
-			logger.Error(err, "failed to retrieve account resource")
-		}
-
-		logger.Info("requeue", "reason", "failed to get")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	return ctrl.Result{}, nil
+	//get sdk account
+	apiAccount, err := uptimerobot.GetAccountDetails(ctx, reconciler.urClient)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	//update status
+	account.Status = uptimerobotcomv1alpha1.AccountStatus{
+		Email:           apiAccount.Email,
+		MonitorLimit:    apiAccount.MonitorLimit,
+		MonitorInterval: apiAccount.MonitorInterval,
+		UpMonitors:      apiAccount.UpMonitors,
+		DownMonitors:    apiAccount.DownMonitors,
+		PausedMonitors:  apiAccount.PausedMonitors,
+	}
+
+	statusWriter := reconciler.Status()
+	err = statusWriter.Update(ctx, &account)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	return ctrl.Result{
+		RequeueAfter: time.Second * 10,
+	}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
