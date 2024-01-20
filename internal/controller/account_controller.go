@@ -64,19 +64,19 @@ func (reconciler *AccountReconciler) Reconcile(ctx context.Context, request ctrl
 	}
 
 	//get sdk account
-	apiAccount, err := uptimerobot.GetAccountDetails(ctx, reconciler.urClient)
+	getAccountDetailsResponse, err := uptimerobot.GetAccountDetails(ctx, reconciler.urClient)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
 	//update status
 	account.Status = uptimerobotcomv1alpha1.AccountStatus{
-		Email:           apiAccount.Email,
-		MonitorLimit:    apiAccount.MonitorLimit,
-		MonitorInterval: apiAccount.MonitorInterval,
-		UpMonitors:      apiAccount.UpMonitors,
-		DownMonitors:    apiAccount.DownMonitors,
-		PausedMonitors:  apiAccount.PausedMonitors,
+		Email:           getAccountDetailsResponse.Account.Email,
+		MonitorLimit:    getAccountDetailsResponse.Account.MonitorLimit,
+		MonitorInterval: getAccountDetailsResponse.Account.MonitorInterval,
+		UpMonitors:      getAccountDetailsResponse.Account.UpMonitors,
+		DownMonitors:    getAccountDetailsResponse.Account.DownMonitors,
+		PausedMonitors:  getAccountDetailsResponse.Account.PausedMonitors,
 	}
 
 	statusWriter := reconciler.Status()
@@ -86,7 +86,7 @@ func (reconciler *AccountReconciler) Reconcile(ctx context.Context, request ctrl
 	}
 
 	return ctrl.Result{
-		RequeueAfter: time.Second * 10,
+		RequeueAfter: time.Second * 30,
 	}, nil
 }
 
