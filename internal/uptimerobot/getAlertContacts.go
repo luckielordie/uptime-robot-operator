@@ -20,7 +20,7 @@ type GetAlertContactResponse struct {
 	} `json:"alert_contacts"`
 }
 
-func GetAlertContacts(ctx context.Context, client Client, alertContactIds []int) (GetAlertContactResponse, error) {
+func GetAlertContacts(ctx context.Context, client UptimeRobotClient, alertContactIds []int) (GetAlertContactResponse, error) {
 	params := map[string]string{}
 	if alertContactIds != nil {
 		for _, id := range alertContactIds {
@@ -32,7 +32,7 @@ func GetAlertContacts(ctx context.Context, client Client, alertContactIds []int)
 		}
 	}
 
-	responseBytes, err := makeApiRequest(ctx, client, "getAlertContacts", params)
+	responseBytes, err := client.MakeApiRequest(ctx, "getAlertContacts", params)
 	if err != nil {
 		return GetAlertContactResponse{}, err
 	}

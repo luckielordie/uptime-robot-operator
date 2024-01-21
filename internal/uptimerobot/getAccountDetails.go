@@ -17,8 +17,8 @@ type GetAccountDetailsResponse struct {
 	} `json:"account"`
 }
 
-func GetAccountDetails(ctx context.Context, client Client) (GetAccountDetailsResponse, error) {
-	apiResponse, err := makeApiRequest(ctx, client, "getAccountDetails", map[string]string{})
+func GetAccountDetails(ctx context.Context, client UptimeRobotClient) (GetAccountDetailsResponse, error) {
+	apiResponse, err := client.MakeApiRequest(ctx, "getAccountDetails", map[string]string{})
 	if err != nil {
 		return GetAccountDetailsResponse{}, err
 	}

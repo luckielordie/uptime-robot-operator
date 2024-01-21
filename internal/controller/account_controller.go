@@ -33,8 +33,8 @@ import (
 // AccountReconciler reconciles a Account object
 type AccountReconciler struct {
 	client.Client
-	urClient uptimerobot.Client
-	Scheme   *runtime.Scheme
+	UptimeRobotClient uptimerobot.UptimeRobotClient
+	Scheme            *runtime.Scheme
 }
 
 func getAccount(ctx context.Context, reader client.Reader, req ctrl.Request) (uptimerobotcomv1alpha1.Account, error) {
@@ -43,7 +43,7 @@ func getAccount(ctx context.Context, reader client.Reader, req ctrl.Request) (up
 	err := reader.Get(ctx, req.NamespacedName, &account)
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			logger.Error(err, "failed to retrieve bucket resource")
+			logger.Error(err, "failed to retrieve account resource")
 		}
 
 		logger.Info("requeue", "reason", "failed to get")
@@ -64,7 +64,7 @@ func (reconciler *AccountReconciler) Reconcile(ctx context.Context, request ctrl
 	}
 
 	//get sdk account
-	getAccountDetailsResponse, err := uptimerobot.GetAccountDetails(ctx, reconciler.urClient)
+	getAccountDetailsResponse, err := uptimerobot.GetAccountDetails(ctx, reconciler.UptimeRobotClient)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

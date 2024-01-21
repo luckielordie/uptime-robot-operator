@@ -18,7 +18,7 @@ func NewClient(apiKey string) Client {
 	}
 }
 
-func makeApiRequest(ctx context.Context, client Client, methodName string, params map[string]string) ([]byte, error) {
+func (client Client) MakeApiRequest(ctx context.Context, methodName string, params map[string]string) ([]byte, error) {
 	url := fmt.Sprintf("https://api.uptimerobot.com/v2/%s", methodName)
 	payload := strings.NewReader(fmt.Sprintf("api_key=%s&format=json", client.apiKey))
 	request, err := http.NewRequestWithContext(ctx, "POST", url, payload)

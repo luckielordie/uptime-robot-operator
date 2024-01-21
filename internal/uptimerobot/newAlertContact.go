@@ -3,7 +3,6 @@ package uptimerobot
 import (
 	"context"
 	"encoding/json"
-	"errors"
 )
 
 type NewAlertContactResponse struct {
@@ -14,11 +13,7 @@ type NewAlertContactResponse struct {
 	} `json:"alertcontact"`
 }
 
-func NewAlertContact(ctx context.Context, client Client, alertType string, value string, friendlyName string) (NewAlertContactResponse, error) {
-	if alertType == "" || value == "" {
-		return NewAlertContactResponse{}, errors.New("required parameters are empty")
-	}
-
+func NewAlertContact(ctx context.Context, client UptimeRobotClient, alertType string, value string, friendlyName string) (NewAlertContactResponse, error) {
 	params := map[string]string{
 		"type":  alertType,
 		"value": value,
@@ -28,7 +23,7 @@ func NewAlertContact(ctx context.Context, client Client, alertType string, value
 		params["friendly_name"] = friendlyName
 	}
 
-	responseBytes, err := makeApiRequest(ctx, client, "getAlertContacts", params)
+	responseBytes, err := client.MakeApiRequest(ctx, "getAlertContacts", params)
 	if err != nil {
 		return NewAlertContactResponse{}, err
 	}

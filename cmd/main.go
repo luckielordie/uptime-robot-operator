@@ -34,6 +34,7 @@ import (
 
 	uptimerobotcomv1alpha1 "github.com/luckielordie/uptime-robot-operator/api/v1alpha1"
 	"github.com/luckielordie/uptime-robot-operator/internal/controller"
+	"github.com/luckielordie/uptime-robot-operator/internal/uptimerobot"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -78,9 +79,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	uptimeRobotClient := uptimerobot.NewClient("1234")
+
 	if err = (&controller.AccountReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:            mgr.GetClient(),
+		Scheme:            mgr.GetScheme(),
+		UptimeRobotClient: uptimeRobotClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Account")
 		os.Exit(1)
