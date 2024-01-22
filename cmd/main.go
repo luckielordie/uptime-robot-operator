@@ -79,14 +79,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	uptimeRobotClient := uptimerobot.NewClient("1234")
+	uptimeRobotClient := uptimerobot.NewClient("")
 
 	if err = (&controller.AccountReconciler{
-		Client:            mgr.GetClient(),
-		Scheme:            mgr.GetScheme(),
-		UptimeRobotClient: uptimeRobotClient,
+		Client:               mgr.GetClient(),
+		Scheme:               mgr.GetScheme(),
+		AccountDetailsGetter: uptimeRobotClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Account")
+		os.Exit(1)
+	}
+	if err = (&controller.AlertContactReconciler{
+		Client:             mgr.GetClient(),
+		Scheme:             mgr.GetScheme(),
+		AlertContactClient: uptimeRobotClient,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "AlertContact")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

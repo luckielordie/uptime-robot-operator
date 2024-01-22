@@ -12,7 +12,7 @@ metadata:
   name: account-editor-role
 rules:
 - apiGroups:
-  - uptimerobot.com.uptimerobot.com
+  - uptimerobot.com
   resources:
   - accounts
   verbs:
@@ -24,7 +24,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - uptimerobot.com.uptimerobot.com
+  - uptimerobot.com
   resources:
   - accounts/status
   verbs:

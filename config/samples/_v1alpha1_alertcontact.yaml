@@ -1,0 +1,14 @@
+apiVersion: uptimerobot.com/v1alpha1
+kind: AlertContact
+metadata:
+  labels:
+    app.kubernetes.io/name: alertcontact
+    app.kubernetes.io/instance: alertcontact-sample
+    app.kubernetes.io/part-of: uptime-robot-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: uptime-robot-operator
+  name: alertcontact-sample
+spec:
+  name: An Alert
+  type: 5
+  value: https://discord.com/api/webhooks/1199116005948010516/gwoplTkMEaOCqwLwwTU7Uwu8TIbH77o5qPTprNPqrWIMD7C2jdE9fLoW4g9f0rketKUv

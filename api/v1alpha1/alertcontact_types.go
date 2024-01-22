@@ -20,41 +20,41 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// AccountSpec defines the desired state of Account
-type AccountSpec struct {
+// AlertContactSpec defines the desired state of AlertContact
+type AlertContactSpec struct {
+	// Name is a friendly name for your AlertContact
+	Name  string `json:"name"`
+	Type  int    `json:"type"`
+	Value string `json:"value"`
 }
 
-// AccountStatus defines the observed state of Account
-type AccountStatus struct {
-	Email           string `json:"email"`
-	MonitorLimit    int    `json:"monitorLimit"`
-	MonitorInterval int    `json:"monitorInterval"`
-	UpMonitors      int    `json:"upMonitors"`
-	DownMonitors    int    `json:"downMonitors"`
-	PausedMonitors  int    `json:"pausedMonitors"`
+// AlertContactStatus defines the observed state of AlertContact
+type AlertContactStatus struct {
+	Id     int `json:"id"`
+	Status int `json:"status"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// Account is the Schema for the accounts API
-type Account struct {
+// AlertContact is the Schema for the alertcontacts API
+type AlertContact struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   AccountSpec   `json:"spec,omitempty"`
-	Status AccountStatus `json:"status,omitempty"`
+	Spec   AlertContactSpec   `json:"spec,omitempty"`
+	Status AlertContactStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// AccountList contains a list of Account
-type AccountList struct {
+// AlertContactList contains a list of AlertContact
+type AlertContactList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Account `json:"items"`
+	Items           []AlertContact `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Account{}, &AccountList{})
+	SchemeBuilder.Register(&AlertContact{}, &AlertContactList{})
 }

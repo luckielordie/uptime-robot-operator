@@ -1,0 +1,58 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - uptimerobot.com
+  resources:
+  - accounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - uptimerobot.com
+  resources:
+  - accounts/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - uptimerobot.com
+  resources:
+  - accounts/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - uptimerobot.com
+  resources:
+  - alertcontacts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - uptimerobot.com
+  resources:
+  - alertcontacts/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - uptimerobot.com
+  resources:
+  - alertcontacts/status
+  verbs:
+  - get
+  - patch
+  - update

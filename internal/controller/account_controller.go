@@ -33,8 +33,8 @@ import (
 // AccountReconciler reconciles a Account object
 type AccountReconciler struct {
 	client.Client
-	UptimeRobotClient uptimerobot.UptimeRobotClient
-	Scheme            *runtime.Scheme
+	AccountDetailsGetter uptimerobot.AccountDetailsGetter
+	Scheme               *runtime.Scheme
 }
 
 func getAccount(ctx context.Context, reader client.Reader, req ctrl.Request) (uptimerobotcomv1alpha1.Account, error) {
@@ -53,9 +53,9 @@ func getAccount(ctx context.Context, reader client.Reader, req ctrl.Request) (up
 	return account, nil
 }
 
-//+kubebuilder:rbac:groups=uptimerobot.com.uptimerobot.com,resources=accounts,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=uptimerobot.com.uptimerobot.com,resources=accounts/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=uptimerobot.com.uptimerobot.com,resources=accounts/finalizers,verbs=update
+//+kubebuilder:rbac:groups=uptimerobot.com,resources=accounts,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=uptimerobot.com,resources=accounts/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=uptimerobot.com,resources=accounts/finalizers,verbs=update
 
 func (reconciler *AccountReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	account, err := getAccount(ctx, reconciler, request)
@@ -64,7 +64,7 @@ func (reconciler *AccountReconciler) Reconcile(ctx context.Context, request ctrl
 	}
 
 	//get sdk account
-	getAccountDetailsResponse, err := uptimerobot.GetAccountDetails(ctx, reconciler.UptimeRobotClient)
+	getAccountDetailsResponse, err := reconciler.AccountDetailsGetter.GetAccountDetails(ctx)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
