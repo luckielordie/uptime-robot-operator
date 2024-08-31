@@ -50,12 +50,21 @@ spec:
             description: AlertContactStatus defines the observed state of AlertContact
             properties:
               id:
-                type: integer
+                type: string
+              name:
+                type: string
               status:
                 type: integer
+              type:
+                type: integer
+              value:
+                type: string
             required:
             - id
+            - name
             - status
+            - type
+            - value
             type: object
         type: object
     served: true

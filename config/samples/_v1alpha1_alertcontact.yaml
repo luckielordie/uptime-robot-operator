@@ -10,5 +10,5 @@ metadata:
   name: alertcontact-sample
 spec:
   name: An Alert
-  type: 5
-  value: https://discord.com/api/webhooks/1199116005948010516/gwoplTkMEaOCqwLwwTU7Uwu8TIbH77o5qPTprNPqrWIMD7C2jdE9fLoW4g9f0rketKUv
+  type: 23
+  value: https://discord.com/api/webhooks/1224760285697544192/Q7uCiA96QwlyFfyoE2GUHLPqzl6AvqK7jA5ea9hNM00xJ91Gs7IlS_nIGEvb081zU8K0

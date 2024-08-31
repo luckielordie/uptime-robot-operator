@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
@@ -95,20 +94,20 @@ func (client Client) GetAccountDetails(ctx context.Context) (GetAccountDetailsRe
 	return response, err
 }
 
-func (client Client) DeleteAlertContact(ctx context.Context, id int) (DeleteAlertContactResponse, error) {
+func (client Client) DeleteAlertContact(ctx context.Context, id string) (DeleteAlertContactResponse, error) {
 	response, err := request[DeleteAlertContactResponse](ctx, "deleteAlertContact", client, func() (map[string]string, error) {
 		return map[string]string{
-			"id": strconv.Itoa(id),
+			"id": id,
 		}, nil
 	})
 
 	return response, err
 }
 
-func (client Client) EditAlertContact(ctx context.Context, id int, value string, friendlyName string) (EditAlertContactResponse, error) {
+func (client Client) EditAlertContact(ctx context.Context, id string, value string, friendlyName string) (EditAlertContactResponse, error) {
 	response, err := request[EditAlertContactResponse](ctx, "editAlertContact", client, func() (map[string]string, error) {
 		params := map[string]string{
-			"id":    strconv.Itoa(id),
+			"id":    id,
 			"value": value,
 		}
 
@@ -122,16 +121,14 @@ func (client Client) EditAlertContact(ctx context.Context, id int, value string,
 	return response, err
 }
 
-func (client Client) GetAlertContacts(ctx context.Context, alertContactIds []int) (GetAlertContactResponse, error) {
+func (client Client) GetAlertContacts(ctx context.Context, alertContactIds []string) (GetAlertContactResponse, error) {
 	response, err := request[GetAlertContactResponse](ctx, "getAlertContacts", client, func() (map[string]string, error) {
 		params := map[string]string{}
-		if alertContactIds != nil {
-			for _, id := range alertContactIds {
-				if params["alert_contacts"] == "" {
-					params["alert_contacts"] = fmt.Sprintf("%d", id)
-				} else {
-					params["alert_contacts"] = fmt.Sprintf("%s-%d", params["alert_contacts"], id)
-				}
+		for _, id := range alertContactIds {
+			if params["alert_contacts"] == "" {
+				params["alert_contacts"] = fmt.Sprint(id)
+			} else {
+				params["alert_contacts"] = fmt.Sprintf("%s-%s", params["alert_contacts"], id)
 			}
 		}
 

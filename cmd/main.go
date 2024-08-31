@@ -79,7 +79,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	uptimeRobotClient := uptimerobot.NewClient("")
+	uptimeRobotClient := uptimerobot.NewClient("u2441198-abf7abe866e6316b31c5c9d3")
 
 	if err = (&controller.AccountReconciler{
 		Client:               mgr.GetClient(),

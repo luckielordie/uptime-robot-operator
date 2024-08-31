@@ -10,22 +10,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-type Client interface {
+type CreateOrUpdater interface {
 	uptimerobot.AlertContactCreator
 	uptimerobot.AlertContactEditor
-	uptimerobot.AlertContactDeleter
 	uptimerobot.AlertContactGetter
 }
 
 type AlertContact struct {
-	Id     int
+	Id     string
 	Name   string
 	Type   int
 	Status int
 	Value  string
 }
 
-func NewAlertContact(id int) *AlertContact {
+func NewAlertContact(id string) *AlertContact {
 	return &AlertContact{
 		Id: id,
 	}
@@ -35,10 +34,10 @@ func IsNotFoundErr(err error) bool {
 	return false
 }
 
-func CreateOrUpdate(ctx context.Context, client Client, alertContact *AlertContact, mutate func() error) (controllerutil.OperationResult, error) {
+func CreateOrUpdate(ctx context.Context, client CreateOrUpdater, alertContact *AlertContact, mutate func() error) (controllerutil.OperationResult, error) {
 	logger := log.FromContext(ctx)
-	//going to assume 0 isn't a valid alert contact id. This will probably bite me in the arse.
-	if alertContact.Id == 0 {
+	//going to assume 0 isn't a valid alert contact id. This will probably bite me in the arse. But they don't give me much choice.
+	if alertContact.Id == "" {
 		logger.Info("no api resource exists, creating...")
 		err := mutate()
 		if err != nil {
@@ -47,17 +46,20 @@ func CreateOrUpdate(ctx context.Context, client Client, alertContact *AlertConta
 
 		response, err := client.NewAlertContact(ctx, strconv.Itoa(alertContact.Type), alertContact.Value, alertContact.Name)
 		if err != nil {
+			logger.Info("failed api request", "response", response, "request", alertContact)
 			return controllerutil.OperationResultNone, err
 		}
 
-		logger.Info("api response", "response", response)
+		logger.Info("successful api request", "response", response, "request", alertContact)
+		alertContact.Id = response.AlertContact.Id
+		alertContact.Status = response.AlertContact.Status
 
 		return controllerutil.OperationResultCreated, nil
 	}
 
 	logger.Info("api resource exists, updating...")
 
-	apiResponse, err := client.GetAlertContacts(ctx, []int{alertContact.Id})
+	apiResponse, err := client.GetAlertContacts(ctx, []string{alertContact.Id})
 	if !IsNotFoundErr(err) {
 		return controllerutil.OperationResultNone, err
 	}
@@ -91,6 +93,8 @@ func CreateOrUpdate(ctx context.Context, client Client, alertContact *AlertConta
 	if err != nil {
 		return controllerutil.OperationResultNone, err
 	}
+
+	alertContact = &existing
 
 	return controllerutil.OperationResultUpdated, nil
 }

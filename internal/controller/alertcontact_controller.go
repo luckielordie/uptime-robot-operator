@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -30,13 +29,21 @@ import (
 
 	uptimerobotcomv1alpha1 "github.com/luckielordie/uptime-robot-operator/api/v1alpha1"
 	"github.com/luckielordie/uptime-robot-operator/internal/controller/alertcontact"
+	"github.com/luckielordie/uptime-robot-operator/internal/uptimerobot"
 )
+
+type AlertContactAPIReconciler interface {
+	uptimerobot.AlertContactCreator
+	uptimerobot.AlertContactEditor
+	uptimerobot.AlertContactGetter
+	uptimerobot.AlertContactDeleter
+}
 
 // AlertContactReconciler reconciles a AlertContact object
 type AlertContactReconciler struct {
 	client.Client
 	Scheme             *runtime.Scheme
-	AlertContactClient alertcontact.Client
+	AlertContactClient AlertContactAPIReconciler
 }
 
 func getAlertContact(ctx context.Context, reader client.Reader, req ctrl.Request) (uptimerobotcomv1alpha1.AlertContact, error) {
@@ -68,42 +75,21 @@ func (reconciler *AlertContactReconciler) Reconcile(ctx context.Context, request
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	if !controllerutil.ContainsFinalizer(&alertContact, utFinalizer) {
-		logger.Info("adding finalizer for alert contact")
-		added := controllerutil.AddFinalizer(&alertContact, utFinalizer)
-		if !added {
-			err = errors.New("failed to add finalizer")
-			logger.Error(err, "failed to add finalizer")
-			return ctrl.Result{}, err
-		}
-
-		err = reconciler.Update(ctx, &alertContact)
+	result, err := Finalize(ctx, reconciler.Client, &alertContact, utFinalizer, func(context.Context) error {
+		_, err := reconciler.AlertContactClient.DeleteAlertContact(ctx, alertContact.Status.Id)
 		if err != nil {
-			logger.Error(err, "failed to update resource")
-			return ctrl.Result{}, err
-		}
-	}
-
-	isToBeDeleted := alertContact.GetDeletionTimestamp() != nil
-	if isToBeDeleted {
-		if controllerutil.ContainsFinalizer(&alertContact, utFinalizer) {
-			logger.Info("finalizing alert contact")
-
-			_, err := reconciler.AlertContactClient.DeleteAlertContact(ctx, alertContact.Status.Id)
-			if err != nil {
-				logger.Error(err, "failed to delete alert contact", "id", alertContact.Status.Id)
-				return ctrl.Result{}, err
-			}
-
-			controllerutil.RemoveFinalizer(&alertContact, utFinalizer)
-			err = reconciler.Update(ctx, &alertContact)
-			if err != nil {
-				logger.Error(err, "failed to update resource after removing finalizer")
-				return ctrl.Result{}, err
-			}
+			logger.Error(err, "failed to delete alert contact", "id", alertContact.Status.Id)
+			return err
 		}
 
-		return ctrl.Result{}, nil //nothing to be done, no requeue
+		return nil
+	})
+	if err != nil || result != controllerutil.OperationResultNone {
+		if result != controllerutil.OperationResultNone {
+			logger.Error(err, "failed finalizing alertcontact")
+		}
+
+		return ctrl.Result{}, err
 	}
 
 	//CreateOrUpdate AlertContact
@@ -111,7 +97,7 @@ func (reconciler *AlertContactReconciler) Reconcile(ctx context.Context, request
 		Id: alertContact.Status.Id,
 	}
 
-	result, err := alertcontact.CreateOrUpdate(ctx, reconciler.AlertContactClient, &alertContactObj, func() error {
+	result, err = alertcontact.CreateOrUpdate(ctx, reconciler.AlertContactClient, &alertContactObj, func() error {
 		alertContactObj.Name = alertContact.Spec.Name
 		alertContactObj.Type = alertContact.Spec.Type
 		alertContactObj.Value = alertContact.Spec.Value
@@ -126,6 +112,9 @@ func (reconciler *AlertContactReconciler) Reconcile(ctx context.Context, request
 	if result != controllerutil.OperationResultNone {
 		alertContact.Status.Id = alertContactObj.Id
 		alertContact.Status.Status = alertContactObj.Status
+		alertContact.Status.Name = alertContact.Name
+		alertContact.Status.Type = alertContactObj.Type
+		alertContact.Status.Value = alertContactObj.Value
 
 		statusClient := reconciler.Client.Status()
 		err = statusClient.Update(ctx, &alertContact)

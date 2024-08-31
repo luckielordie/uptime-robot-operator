@@ -5,8 +5,8 @@ import "context"
 type NewAlertContactResponse struct {
 	Stat         string `json:"stat"`
 	AlertContact struct {
-		Id     int `json:"id"`
-		Status int `json:"status"`
+		Id     string `json:"id"`
+		Status int    `json:"status"`
 	} `json:"alertcontact"`
 }
 
@@ -24,7 +24,7 @@ type GetAlertContactResponse struct {
 	Offset        int    `json:"offset"`
 	Total         int    `json:"total"`
 	AlertContacts []struct {
-		Id           int    `json:"id"`
+		Id           string `json:"id"`
 		FriendlyName string `json:"friendly_name"`
 		Type         int    `json:"type"`
 		Status       int    `json:"status"`
@@ -37,13 +37,13 @@ func (c GetAlertContactResponse) GetStat() string {
 }
 
 type AlertContactGetter interface {
-	GetAlertContacts(ctx context.Context, alertContactIds []int) (GetAlertContactResponse, error)
+	GetAlertContacts(ctx context.Context, alertContactIds []string) (GetAlertContactResponse, error)
 }
 
 type EditAlertContactResponse struct {
 	Stat         string `json:"stat"`
 	AlertContact struct {
-		Id int `json:"id"`
+		Id string `json:"id"`
 	} `json:"alert_contact"`
 }
 
@@ -52,13 +52,13 @@ func (c EditAlertContactResponse) GetStat() string {
 }
 
 type AlertContactEditor interface {
-	EditAlertContact(ctx context.Context, id int, value string, friendlyName string) (EditAlertContactResponse, error)
+	EditAlertContact(ctx context.Context, id string, value string, friendlyName string) (EditAlertContactResponse, error)
 }
 
 type DeleteAlertContactResponse struct {
 	Stat         string `json:"stat"`
 	AlertContact struct {
-		Id int `json:"id"`
+		Id string `json:"id"`
 	} `json:"alert_contact"`
 }
 
@@ -67,5 +67,5 @@ func (c DeleteAlertContactResponse) GetStat() string {
 }
 
 type AlertContactDeleter interface {
-	DeleteAlertContact(ctx context.Context, id int) (DeleteAlertContactResponse, error)
+	DeleteAlertContact(ctx context.Context, id string) (DeleteAlertContactResponse, error)
 }

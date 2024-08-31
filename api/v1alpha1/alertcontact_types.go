@@ -30,8 +30,11 @@ type AlertContactSpec struct {
 
 // AlertContactStatus defines the observed state of AlertContact
 type AlertContactStatus struct {
-	Id     int `json:"id"`
-	Status int `json:"status"`
+	Id     string `json:"id"`
+	Name   string `json:"name"`
+	Type   int    `json:"type"`
+	Value  string `json:"value"`
+	Status int    `json:"status"`
 }
 
 //+kubebuilder:object:root=true
