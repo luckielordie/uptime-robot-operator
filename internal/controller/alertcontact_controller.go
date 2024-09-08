@@ -28,7 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	uptimerobotcomv1alpha1 "github.com/luckielordie/uptime-robot-operator/api/v1alpha1"
-	"github.com/luckielordie/uptime-robot-operator/internal/controller/alertcontact"
+	"github.com/luckielordie/uptime-robot-operator/internal/controller/urrecon"
 	"github.com/luckielordie/uptime-robot-operator/internal/uptimerobot"
 )
 
@@ -42,6 +42,7 @@ type AlertContactAPIReconciler interface {
 // AlertContactReconciler reconciles a AlertContact object
 type AlertContactReconciler struct {
 	client.Client
+	urrecon.AlertContactApiReconciler
 	Scheme             *runtime.Scheme
 	AlertContactClient AlertContactAPIReconciler
 }
@@ -93,11 +94,11 @@ func (reconciler *AlertContactReconciler) Reconcile(ctx context.Context, request
 	}
 
 	//CreateOrUpdate AlertContact
-	alertContactObj := alertcontact.AlertContact{
+	alertContactObj := urrecon.AlertContact{
 		Id: alertContact.Status.Id,
 	}
 
-	result, err = alertcontact.CreateOrUpdate(ctx, reconciler.AlertContactClient, &alertContactObj, func() error {
+	result, err = urrecon.ReconcileApiObject[urrecon.AlertContact](ctx, reconciler, &alertContactObj, func() error {
 		alertContactObj.Name = alertContact.Spec.Name
 		alertContactObj.Type = alertContact.Spec.Type
 		alertContactObj.Value = alertContact.Spec.Value

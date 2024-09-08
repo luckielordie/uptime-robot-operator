@@ -34,6 +34,7 @@ import (
 
 	uptimerobotcomv1alpha1 "github.com/luckielordie/uptime-robot-operator/api/v1alpha1"
 	"github.com/luckielordie/uptime-robot-operator/internal/controller"
+	"github.com/luckielordie/uptime-robot-operator/internal/controller/urrecon"
 	"github.com/luckielordie/uptime-robot-operator/internal/uptimerobot"
 	//+kubebuilder:scaffold:imports
 )
@@ -90,9 +91,10 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controller.AlertContactReconciler{
-		Client:             mgr.GetClient(),
-		Scheme:             mgr.GetScheme(),
-		AlertContactClient: uptimeRobotClient,
+		Client:                    mgr.GetClient(),
+		Scheme:                    mgr.GetScheme(),
+		AlertContactApiReconciler: urrecon.NewAlertContactApiReconciler(uptimeRobotClient),
+		AlertContactClient:        uptimeRobotClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "AlertContact")
 		os.Exit(1)
