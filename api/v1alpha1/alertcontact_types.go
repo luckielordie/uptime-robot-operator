@@ -20,21 +20,43 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +kubebuilder:validation:Enum=sms;email;twitter;webhook;pushbullet;zapier;pro-sms;pushover;slack;voice-call;splunk;pagerduty;opsgenie;ms-teams;google-chat;discord
+type AlertContactType string
+
+const (
+	SMS        AlertContactType = "sms"
+	EMAIL      AlertContactType = "email"
+	TWITTER    AlertContactType = "twitter"
+	WEBHOOK    AlertContactType = "webhook"
+	PUSHBULLET AlertContactType = "pushbullet"
+	ZAPIER     AlertContactType = "zapier"
+	PROSMS     AlertContactType = "pro-sms"
+	PUSHOVER   AlertContactType = "pushover"
+	SLACK      AlertContactType = "slack"
+	VOICECALL  AlertContactType = "voice-call"
+	SPLUNK     AlertContactType = "splunk"
+	PAGERDUTY  AlertContactType = "pagerduty"
+	OPSGENIE   AlertContactType = "opsgenie"
+	TEAMS      AlertContactType = "ms-teams"
+	GOOGLECHAT AlertContactType = "google-chat"
+	DISCORD    AlertContactType = "discord"
+)
+
 // AlertContactSpec defines the desired state of AlertContact
 type AlertContactSpec struct {
 	// Name is a friendly name for your AlertContact
-	Name  string `json:"name"`
-	Type  int    `json:"type"`
-	Value string `json:"value"`
+	Name  string           `json:"name"`
+	Type  AlertContactType `json:"type"`
+	Value string           `json:"value"`
 }
 
 // AlertContactStatus defines the observed state of AlertContact
 type AlertContactStatus struct {
-	Id     string `json:"id"`
-	Name   string `json:"name"`
-	Type   int    `json:"type"`
-	Value  string `json:"value"`
-	Status int    `json:"status"`
+	Id     string           `json:"id"`
+	Name   string           `json:"name"`
+	Type   AlertContactType `json:"type"`
+	Value  string           `json:"value"`
+	Status int              `json:"status"`
 }
 
 //+kubebuilder:object:root=true

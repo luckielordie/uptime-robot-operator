@@ -38,7 +38,24 @@ spec:
                 description: Name is a friendly name for your AlertContact
                 type: string
               type:
-                type: integer
+                enum:
+                - sms
+                - email
+                - twitter
+                - webhook
+                - pushbullet
+                - zapier
+                - pro-sms
+                - pushover
+                - slack
+                - voice-call
+                - splunk
+                - pagerduty
+                - opsgenie
+                - ms-teams
+                - google-chat
+                - discord
+                type: string
               value:
                 type: string
             required:
@@ -56,7 +73,24 @@ spec:
               status:
                 type: integer
               type:
-                type: integer
+                enum:
+                - sms
+                - email
+                - twitter
+                - webhook
+                - pushbullet
+                - zapier
+                - pro-sms
+                - pushover
+                - slack
+                - voice-call
+                - splunk
+                - pagerduty
+                - opsgenie
+                - ms-teams
+                - google-chat
+                - discord
+                type: string
               value:
                 type: string
             required:

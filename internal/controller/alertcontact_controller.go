@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
@@ -64,7 +65,85 @@ func getAlertContact(ctx context.Context, reader client.Reader, req ctrl.Request
 	return alertContact, nil
 }
 
-const utFinalizer = "uptimerobot.com/finalizer"
+func AlertContactTypeToInt(alertContactType uptimerobotcomv1alpha1.AlertContactType) (int, error) {
+	switch alertContactType {
+	case uptimerobotcomv1alpha1.SMS:
+		return 1, nil
+	case uptimerobotcomv1alpha1.EMAIL:
+		return 2, nil
+	case uptimerobotcomv1alpha1.TWITTER:
+		return 3, nil
+	case uptimerobotcomv1alpha1.WEBHOOK:
+		return 5, nil
+	case uptimerobotcomv1alpha1.PUSHBULLET:
+		return 6, nil
+	case uptimerobotcomv1alpha1.ZAPIER:
+		return 7, nil
+	case uptimerobotcomv1alpha1.PROSMS:
+		return 8, nil
+	case uptimerobotcomv1alpha1.PUSHOVER:
+		return 9, nil
+	case uptimerobotcomv1alpha1.SLACK:
+		return 11, nil
+	case uptimerobotcomv1alpha1.VOICECALL:
+		return 14, nil
+	case uptimerobotcomv1alpha1.SPLUNK:
+		return 15, nil
+	case uptimerobotcomv1alpha1.PAGERDUTY:
+		return 16, nil
+	case uptimerobotcomv1alpha1.OPSGENIE:
+		return 17, nil
+	case uptimerobotcomv1alpha1.TEAMS:
+		return 20, nil
+	case uptimerobotcomv1alpha1.GOOGLECHAT:
+		return 21, nil
+	case uptimerobotcomv1alpha1.DISCORD:
+		return 23, nil
+	default:
+		return 0, errors.New("unrecognised alert contact type")
+	}
+}
+
+func IntToAlertContactType(alertContactTypeId int) (uptimerobotcomv1alpha1.AlertContactType, error) {
+	switch alertContactTypeId {
+	case 1:
+		return uptimerobotcomv1alpha1.SMS, nil
+	case 2:
+		return uptimerobotcomv1alpha1.EMAIL, nil
+	case 3:
+		return uptimerobotcomv1alpha1.TWITTER, nil
+	case 5:
+		return uptimerobotcomv1alpha1.WEBHOOK, nil
+	case 6:
+		return uptimerobotcomv1alpha1.PUSHBULLET, nil
+	case 7:
+		return uptimerobotcomv1alpha1.ZAPIER, nil
+	case 8:
+		return uptimerobotcomv1alpha1.PROSMS, nil
+	case 9:
+		return uptimerobotcomv1alpha1.PUSHOVER, nil
+	case 11:
+		return uptimerobotcomv1alpha1.SLACK, nil
+	case 14:
+		return uptimerobotcomv1alpha1.VOICECALL, nil
+	case 15:
+		return uptimerobotcomv1alpha1.SPLUNK, nil
+	case 16:
+		return uptimerobotcomv1alpha1.PAGERDUTY, nil
+	case 17:
+		return uptimerobotcomv1alpha1.OPSGENIE, nil
+	case 20:
+		return uptimerobotcomv1alpha1.TEAMS, nil
+	case 21:
+		return uptimerobotcomv1alpha1.GOOGLECHAT, nil
+	case 23:
+		return uptimerobotcomv1alpha1.DISCORD, nil
+	default:
+		return "", errors.New("unrecognised alert contact type")
+	}
+}
+
+const FINALIZER_TOKEN = "uptimerobot.com/finalizer"
 
 //+kubebuilder:rbac:groups=uptimerobot.com,resources=alertcontacts,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=uptimerobot.com,resources=alertcontacts/status,verbs=get;update;patch
@@ -77,7 +156,7 @@ func (reconciler *AlertContactReconciler) Reconcile(ctx context.Context, request
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	result, err := Finalize(ctx, reconciler.Client, &alertContact, utFinalizer, func(context.Context) error {
+	result, err := Finalize(ctx, reconciler.Client, &alertContact, FINALIZER_TOKEN, func(context.Context) error {
 		_, err := reconciler.AlertContactClient.DeleteAlertContact(ctx, alertContact.Status.Id)
 		if err != nil {
 			errStr := err.Error()
@@ -105,7 +184,11 @@ func (reconciler *AlertContactReconciler) Reconcile(ctx context.Context, request
 
 	result, err = urrecon.ReconcileApiObject[urrecon.AlertContact](ctx, reconciler, &alertContactObj, func() error {
 		alertContactObj.Name = alertContact.Spec.Name
-		alertContactObj.Type = alertContact.Spec.Type
+		alertContactTypeId, err := AlertContactTypeToInt(alertContact.Spec.Type)
+		if err != nil {
+			return err
+		}
+		alertContactObj.Type = alertContactTypeId
 		alertContactObj.Value = alertContact.Spec.Value
 		alertContactObj.Status = alertContact.Status.Status
 		return nil
@@ -118,8 +201,13 @@ func (reconciler *AlertContactReconciler) Reconcile(ctx context.Context, request
 	if result != controllerutil.OperationResultNone {
 		alertContact.Status.Id = alertContactObj.Id
 		alertContact.Status.Status = alertContactObj.Status
-		alertContact.Status.Name = alertContact.Name
-		alertContact.Status.Type = alertContactObj.Type
+		alertContact.Status.Name = alertContactObj.Name
+		alertContactType, err := IntToAlertContactType(alertContactObj.Type)
+		if err != nil {
+			logger.Error(err, "failed parsing alert contact type")
+			return ctrl.Result{}, err
+		}
+		alertContact.Status.Type = alertContactType
 		alertContact.Status.Value = alertContactObj.Value
 
 		statusClient := reconciler.Client.Status()
@@ -131,7 +219,7 @@ func (reconciler *AlertContactReconciler) Reconcile(ctx context.Context, request
 	}
 
 	return ctrl.Result{
-		RequeueAfter: time.Second * 30,
+		RequeueAfter: time.Second * 15,
 	}, nil
 }
 

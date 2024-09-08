@@ -42,7 +42,7 @@ func updateApiResource[ApiObject any](ctx context.Context, editor ApiObjectEdito
 
 	if reflect.DeepEqual(remote, local) {
 		logger.Info("kube object api resource is in sync")
-		return controllerutil.OperationResultNone, nil
+		return controllerutil.OperationResultUpdatedStatus, nil
 	}
 
 	logger.Info("kube object and api resource out of sync, updating api resource", "from", *remote, "to", *local)
