@@ -5,8 +5,7 @@ import "context"
 type NewAlertContactResponse struct {
 	Stat         string `json:"stat"`
 	AlertContact struct {
-		Id     string `json:"id"`
-		Status int    `json:"status"`
+		Id int `json:"id"`
 	} `json:"alertcontact"`
 }
 
@@ -43,7 +42,7 @@ type AlertContactGetter interface {
 type EditAlertContactResponse struct {
 	Stat         string `json:"stat"`
 	AlertContact struct {
-		Id string `json:"id"`
+		Id int `json:"id"`
 	} `json:"alert_contact"`
 }
 

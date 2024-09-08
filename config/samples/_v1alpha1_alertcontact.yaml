@@ -9,6 +9,6 @@ metadata:
     app.kubernetes.io/created-by: uptime-robot-operator
   name: alertcontact-sample
 spec:
-  name: An Alert
+  name: superbestfriends-members
   type: 23
   value: https://discord.com/api/webhooks/1224760285697544192/Q7uCiA96QwlyFfyoE2GUHLPqzl6AvqK7jA5ea9hNM00xJ91Gs7IlS_nIGEvb081zU8K0
