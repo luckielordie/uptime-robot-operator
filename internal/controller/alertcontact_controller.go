@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -79,6 +80,10 @@ func (reconciler *AlertContactReconciler) Reconcile(ctx context.Context, request
 	result, err := Finalize(ctx, reconciler.Client, &alertContact, utFinalizer, func(context.Context) error {
 		_, err := reconciler.AlertContactClient.DeleteAlertContact(ctx, alertContact.Status.Id)
 		if err != nil {
+			errStr := err.Error()
+			if strings.Contains(errStr, "not_found") {
+				return nil
+			}
 			logger.Error(err, "failed to delete alert contact", "id", alertContact.Status.Id)
 			return err
 		}
