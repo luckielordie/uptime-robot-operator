@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -145,12 +146,137 @@ func (client Client) NewAlertContact(ctx context.Context, alertType string, valu
 			"value": value,
 		}
 
-		if friendlyName != "" {
-			params["friendly_name"] = friendlyName
+		params = IfStringSetAddParam("friendly_name", friendlyName, params)
+
+		return params, nil
+	})
+
+	return response, err
+}
+
+func (client Client) NewMonitor(ctx context.Context, req NewMonitorRequest) (NewMonitorResponse, error) {
+	response, err := request[NewMonitorResponse](ctx, "newMonitor", client, func() (map[string]string, error) {
+		params := map[string]string{
+			"friendly_name": req.FriendlyName,
+			"url":           req.Url,
+			"type":          strconv.Itoa(req.MonitorType),
+		}
+
+		params = IfIntSetAddParam("sub_type", req.SubType, params)
+		params = IfIntSetAddParam("port", req.Port, params)
+		params = IfIntSetAddParam("keyword_type", req.KeywordType, params)
+		params = IfIntSetAddParam("keyword_case_type", req.KeywordCaseType, params)
+		params = IfStringSetAddParam("keyword_value", req.KeywordValue, params)
+		params = IfIntSetAddParam("interval", req.Interval, params)
+		params = IfIntSetAddParam("timeout", req.Timeout, params)
+		params = IfStringSetAddParam("http_username", req.HttpUsername, params)
+		params = IfStringSetAddParam("http_password", req.HttpPassword, params)
+		params = IfIntSetAddParam("http_auth_type", req.HttpAuthType, params)
+		params = IfIntSetAddParam("post_type", req.PostType, params)
+		params = IfStringSetAddParam("post_value", req.PostValue, params)
+		params = IfStringSetAddParam("http_method", req.HttpMethod, params)
+		params = IfIntSetAddParam("post_content_type", req.PostContentType, params)
+
+		for _, id := range req.AlertContacts {
+			if params["alert_contacts"] == "" {
+				params["alert_contacts"] = fmt.Sprint(id)
+			} else {
+				params["alert_contacts"] = fmt.Sprintf("%s-%s", params["alert_contacts"], id)
+			}
+		}
+
+		params = IfStringSetAddParam("mwindows", req.MaintenanceWindows, params)
+		params = IfStringSetAddParam("custom_http_headers", req.CustomHttpHeaders, params)
+		params = IfStringSetAddParam("custom_http_statuses", req.CustomHttpStatuses, params)
+
+		return params, nil
+	})
+
+	return response, err
+}
+
+func (client Client) DeleteMonitor(ctx context.Context, id int) (DeleteMonitorResponse, error) {
+	response, err := request[DeleteMonitorResponse](ctx, "deleteMonitor", client, func() (map[string]string, error) {
+		params := map[string]string{
+			"id": strconv.Itoa(id),
 		}
 
 		return params, nil
 	})
 
 	return response, err
+}
+
+func (client Client) EditMonitor(ctx context.Context, req EditMonitorRequest) (EditMonitorResponse, error) {
+	response, err := request[EditMonitorResponse](ctx, "editMonitor", client, func() (map[string]string, error) {
+		params := map[string]string{
+			"id": req.Id,
+		}
+		params = IfStringSetAddParam("friendly_name", req.FriendlyName, params)
+		params = IfStringSetAddParam("url", req.Url, params)
+
+		params = IfIntSetAddParam("sub_type", req.SubType, params)
+		params = IfIntSetAddParam("port", req.Port, params)
+		params = IfIntSetAddParam("keyword_type", req.KeywordType, params)
+		params = IfIntSetAddParam("keyword_case_type", req.KeywordCaseType, params)
+		params = IfStringSetAddParam("keyword_value", req.KeywordValue, params)
+		params = IfIntSetAddParam("interval", req.Interval, params)
+		params = IfIntSetAddParam("timeout", req.Timeout, params)
+		params = IfStringSetAddParam("http_username", req.HttpUsername, params)
+		params = IfStringSetAddParam("http_password", req.HttpPassword, params)
+		params = IfIntSetAddParam("http_auth_type", req.HttpAuthType, params)
+		params = IfIntSetAddParam("post_type", req.PostType, params)
+		params = IfStringSetAddParam("post_value", req.PostValue, params)
+		params = IfStringSetAddParam("http_method", req.HttpMethod, params)
+		params = IfIntSetAddParam("post_content_type", req.PostContentType, params)
+
+		for _, id := range req.AlertContacts {
+			if params["alert_contacts"] == "" {
+				params["alert_contacts"] = fmt.Sprint(id)
+			} else {
+				params["alert_contacts"] = fmt.Sprintf("%s-%s", params["alert_contacts"], id)
+			}
+		}
+
+		params = IfStringSetAddParam("mwindows", req.MaintenanceWindows, params)
+		params = IfStringSetAddParam("custom_http_headers", req.CustomHttpHeaders, params)
+		params = IfStringSetAddParam("custom_http_statuses", req.CustomHttpStatuses, params)
+
+		return params, nil
+	})
+
+	return response, err
+}
+
+func (client Client) GetMonitors(ctx context.Context, monitorIds []string) (GetMonitorResponse, error) {
+	response, err := request[GetMonitorResponse](ctx, "getMonitors", client, func() (map[string]string, error) {
+		params := map[string]string{}
+		for _, id := range monitorIds {
+			if params["monitors"] == "" {
+				params["monitors"] = fmt.Sprint(id)
+			} else {
+				params["monitors"] = fmt.Sprintf("%s-%s", params["monitors"], id)
+			}
+		}
+
+		return params, nil
+	})
+
+	return response, err
+}
+
+func IfIntSetAddParam(paramString string, value int, params map[string]string) map[string]string {
+	if value != 0 {
+		params[paramString] = strconv.Itoa(value)
+	}
+
+	return params
+}
+
+func IfStringSetAddParam(paramString string, value string, params map[string]string) map[string]string {
+	if value != "" {
+		params[paramString] = value
+	}
+
+	return params
 }
