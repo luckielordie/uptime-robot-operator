@@ -52,8 +52,6 @@ func updateApiResource[ApiObject any](ctx context.Context, editor ApiObjectEdito
 		return controllerutil.OperationResultNone, err
 	}
 
-	*local = *remote
-
 	return controllerutil.OperationResultUpdated, nil
 }
 

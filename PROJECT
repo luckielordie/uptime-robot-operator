@@ -24,4 +24,12 @@ resources:
   kind: AlertContact
   path: github.com/luckielordie/uptime-robot-operator/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: uptimerobot.com
+  kind: Monitor
+  path: github.com/luckielordie/uptime-robot-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"

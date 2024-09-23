@@ -18,8 +18,10 @@ type MonitorApiClient interface {
 }
 
 type Monitor struct {
-	Id   string
-	Name string
+	Id            string
+	Name          string
+	Url           string
+	AlertContacts []string
 }
 
 type MonitorApiReconciler struct {
@@ -35,7 +37,9 @@ func NewMonitorApiReconciler(apiClient MonitorApiClient) MonitorApiReconciler {
 func (reconciler *MonitorApiReconciler) CreateApiObject(ctx context.Context, monitor *Monitor) error {
 	logger := log.FromContext(ctx)
 	response, err := reconciler.apiClient.NewMonitor(ctx, uptimerobot.NewMonitorRequest{
-		FriendlyName: monitor.Name,
+		FriendlyName:  monitor.Name,
+		Url:           monitor.Url,
+		AlertContacts: monitor.AlertContacts,
 	})
 	if err != nil {
 		logger.Info("failed api request", "response", response)
@@ -52,8 +56,10 @@ func (reconciler *MonitorApiReconciler) EditApiObject(ctx context.Context, monit
 	logger := log.FromContext(ctx)
 
 	response, err := reconciler.apiClient.EditMonitor(ctx, uptimerobot.EditMonitorRequest{
-		Id:           monitor.Id,
-		FriendlyName: monitor.Name,
+		Id:            monitor.Id,
+		FriendlyName:  monitor.Name,
+		Url:           monitor.Url,
+		AlertContacts: monitor.AlertContacts,
 	})
 	if err != nil {
 		logger.Info("failed api request", "response", response)
@@ -98,8 +104,12 @@ func (reconciler *MonitorApiReconciler) GetApiObject(ctx context.Context, monito
 		return nil, errors.New("api returned more than one monitor when only one was expected")
 	}
 
+	apiMonitor := apiResponse.Monitors[0]
+
 	return &Monitor{
-		Id:   apiResponse.Monitors[0].Id,
-		Name: apiResponse.Monitors[0].FriendlyName,
+		Id:            apiMonitor.Id,
+		Name:          apiMonitor.FriendlyName,
+		Url:           apiMonitor.Url,
+		AlertContacts: monitor.AlertContacts, //alert contacts aren't available on the API
 	}, nil
 }
