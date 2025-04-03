@@ -7,6 +7,10 @@ metadata:
     app.kubernetes.io/part-of: uptime-robot-operator
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: uptime-robot-operator
-  name: monitor-sample
+  name: google
 spec:
-  # TODO(user): Add fields here
+  name: google.com
+  url: https://google.com
+  alertContacts:
+    matchLabels:
+      app.kubernetes.io/name: alertcontact

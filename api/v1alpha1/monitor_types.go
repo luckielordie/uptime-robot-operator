@@ -32,7 +32,7 @@ type MonitorSpec struct {
 
 // MonitorStatus defines the observed state of Monitor
 type MonitorStatus struct {
-	Id   int    `json:"id"`
+	Id   string `json:"id"`
 	Name string `json:"name"`
 	Url  string `json:"url"`
 }

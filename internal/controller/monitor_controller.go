@@ -77,7 +77,9 @@ func getListOfAlertContactIds(ctx context.Context, reader client.Reader, labels 
 
 	var ids []string
 	for _, ac := range alertContacts.Items {
-		ids = append(ids, ac.Status.Id)
+		if ac.Status.Id != "" {
+			ids = append(ids, ac.Status.Id)
+		}
 	}
 
 	return ids, nil
@@ -106,7 +108,12 @@ func (reconciler *MonitorReconciler) Reconcile(ctx context.Context, request ctrl
 	}
 
 	result, err := Finalize(ctx, reconciler.Client, &monitor, FINALIZER_TOKEN, func(context.Context) error {
-		_, err := reconciler.MonitorClient.DeleteMonitor(ctx, monitor.Status.Id)
+		idInt, err := strconv.Atoi(monitor.Status.Id)
+		if err != nil {
+			return err
+		}
+
+		_, err = reconciler.MonitorClient.DeleteMonitor(ctx, idInt)
 		if err != nil {
 			errStr := err.Error()
 			if strings.Contains(errStr, "not_found") {
@@ -132,7 +139,7 @@ func (reconciler *MonitorReconciler) Reconcile(ctx context.Context, request ctrl
 	}
 
 	monitorObj := urrecon.Monitor{
-		Id:            strconv.Itoa(monitor.Status.Id),
+		Id:            monitor.Status.Id,
 		AlertContacts: alertContactIds,
 	}
 
@@ -148,11 +155,7 @@ func (reconciler *MonitorReconciler) Reconcile(ctx context.Context, request ctrl
 	}
 
 	if result != controllerutil.OperationResultNone {
-		monitor.Status.Id, err = strconv.Atoi(monitorObj.Id)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-
+		monitor.Status.Id = monitorObj.Id
 		monitor.Status.Name = monitorObj.Name
 		monitor.Status.Url = monitorObj.Url
 

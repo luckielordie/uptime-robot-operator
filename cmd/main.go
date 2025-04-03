@@ -100,8 +100,10 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controller.MonitorReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:               mgr.GetClient(),
+		Scheme:               mgr.GetScheme(),
+		MonitorApiReconciler: urrecon.NewMonitorApiReconciler(uptimeRobotClient),
+		MonitorClient:        uptimeRobotClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Monitor")
 		os.Exit(1)

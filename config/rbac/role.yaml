@@ -56,3 +56,29 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - uptimerobot.com
+  resources:
+  - monitors
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - uptimerobot.com
+  resources:
+  - monitors/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - uptimerobot.com
+  resources:
+  - monitors/status
+  verbs:
+  - get
+  - patch
+  - update
